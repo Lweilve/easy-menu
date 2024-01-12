@@ -91,7 +91,7 @@ const onSubmit = async (formEl) => {
 
       meals.forEach((meal, index) => {
         const day = days[index];
-        const sections = meal.split(/早餐|午餐|晚餐/).filter(Boolean);
+        const sections = meal.split(/早餐|午餐|晚餐/).filter(item => item.trim() !== '');
         menu[day] = {
           [`${day}Breakfast`]: renderText(sections[0]?.trim()),
           [`${day}Lunch`]: renderText(sections[1]?.trim()),
@@ -103,7 +103,7 @@ const onSubmit = async (formEl) => {
       let date = new Date(dateString);
       const result = {};
 
-      for (var i = 0; i <= 5; i++) {
+      for (var i = 0; i < 5; i++) {
         const month = date.getMonth() + 1;
         const day = date.getDate();
         result[`${days[i]}Date`] = `${month}月${day}日`;
