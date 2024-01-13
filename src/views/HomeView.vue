@@ -76,10 +76,10 @@ const onSubmit = async (formEl) => {
   await formEl.validate((valid, fields) => {
     if (valid) {
       const { dateString, text } = form;
-      const cleanedText = text.replace(/\n/g, "");
-
-      const meals = cleanedText.split(/星期[一二三四五]/).filter(Boolean);
-
+      const cleanedText = text.replace(/\s|\n/g, "");
+      const meals = cleanedText
+        .split(/星期[一二三四五]/)
+        .filter((item) => item !== "");
       const days = ["monday", "tuesday", "wednesday", "thursday", "friday"];
       const menu = {
         monday: {},
@@ -91,11 +91,13 @@ const onSubmit = async (formEl) => {
 
       meals.forEach((meal, index) => {
         const day = days[index];
-        const sections = meal.split(/早餐|午餐|晚餐/).filter(item => item.trim() !== '');
+        const sections = meal
+          .split(/早餐|午餐|晚餐/)
+          .filter((item) => item !== "");
         menu[day] = {
-          [`${day}Breakfast`]: renderText(sections[0]?.trim()),
-          [`${day}Lunch`]: renderText(sections[1]?.trim()),
-          [`${day}Supper`]: renderText(sections[2]?.trim()),
+          [`${day}Breakfast`]: renderText(sections[0]),
+          [`${day}Lunch`]: renderText(sections[1]),
+          [`${day}Supper`]: renderText(sections[2]),
         };
       });
       const { monday, tuesday, wednesday, thursday, friday } = menu;
@@ -120,8 +122,13 @@ const onSubmit = async (formEl) => {
       };
       const json = JSON.stringify(data);
       form.data = json;
-      ElMessage("已成功生成数据，请复制后点击跳转按钮！");
-      copyToClipboard(json)
+      ElMessage({
+        message: "已成功生成数据，请复制后点击跳转按钮！",
+        type: "success",
+        duration: 5000,
+        offset: 24
+      });
+      copyToClipboard(json);
     } else {
       console.log("error submit!", fields);
     }
