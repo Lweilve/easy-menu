@@ -1,28 +1,30 @@
 <template>
   <el-config-provider :locale="locale" size="large">
     <h1 class="title">食堂菜谱生成系统</h1>
-    <el-form ref="ruleFormRef" :model="form" :rules="rules" label-width="120px" label-position="top">
+    <el-form
+      ref="ruleFormRef"
+      :model="form"
+      :rules="rules"
+      label-width="120px"
+      label-position="top"
+    >
       <el-form-item label="开始日期" prop="dateString">
         <el-date-picker
           v-model="form.dateString"
           type="date"
           placeholder="请选择开始日期"
           style="width: 100%"
+          :editable="false"
+          @click="showCustomDatePicker"
         />
       </el-form-item>
       <el-form-item label="菜单数据" prop="text">
         <el-input v-model="form.text" type="textarea" rows="7" />
       </el-form-item>
       <el-form-item>
-        <el-button type="primary" @click="onSubmit(ruleFormRef)"
-          >生成</el-button
-        >
-      </el-form-item>
-      <el-form-item label="生成数据">
-        <el-input v-model="form.data" type="textarea" rows="7" />
-      </el-form-item>
-      <el-form-item>
-        <el-button type="primary" @click="handleTo">跳转</el-button>
+        <el-button style="width: 100%;" type="primary" size="large" @click="onSubmit(ruleFormRef)">
+          生成菜单
+        </el-button>
       </el-form-item>
     </el-form>
   </el-config-provider>
@@ -157,7 +159,7 @@ const renderDoc = async (json) => {
       "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
   });
   const fileName = `食堂菜谱${json.mondayDate}.docx`;
-  
+
   if (window.navigator.msSaveOrOpenBlob) {
     window.navigator.msSaveOrOpenBlob(out, fileName);
   } else {
@@ -173,6 +175,9 @@ const renderDoc = async (json) => {
 
 const handleTo = () => {
   window.open("https://docxtemplater.com/demo/#/view/cyber-security-report");
+};
+const showCustomDatePicker = (event) => {
+  event.preventDefault();
 };
 </script>
 
