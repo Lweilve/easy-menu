@@ -1,6 +1,7 @@
 <template>
   <el-config-provider :locale="locale" size="large">
-    <el-form ref="ruleFormRef" :model="form" :rules="rules" label-width="120px">
+    <h1 class="title">食堂菜谱生成系统</h1>
+    <el-form ref="ruleFormRef" :model="form" :rules="rules" label-width="120px" label-position="top">
       <el-form-item label="开始日期" prop="dateString">
         <el-date-picker
           v-model="form.dateString"
@@ -156,6 +157,7 @@ const renderDoc = async (json) => {
       "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
   });
   const fileName = `食堂菜谱${json.mondayDate}.docx`;
+  
   if (window.navigator.msSaveOrOpenBlob) {
     window.navigator.msSaveOrOpenBlob(out, fileName);
   } else {
@@ -173,3 +175,10 @@ const handleTo = () => {
   window.open("https://docxtemplater.com/demo/#/view/cyber-security-report");
 };
 </script>
+
+<style>
+.title {
+  margin-bottom: 20px;
+  text-align: center;
+}
+</style>
