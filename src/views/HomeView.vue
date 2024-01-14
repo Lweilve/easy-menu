@@ -22,7 +22,12 @@
         <el-input v-model="form.text" type="textarea" rows="7" />
       </el-form-item>
       <el-form-item>
-        <el-button style="width: 100%;" type="primary" size="large" @click="onSubmit(ruleFormRef)">
+        <el-button
+          style="width: 100%"
+          type="primary"
+          size="large"
+          @click="onSubmit(ruleFormRef)"
+        >
           生成菜单
         </el-button>
       </el-form-item>
@@ -38,6 +43,14 @@ import PizZip from "pizzip"; //"pizzip": "^3.1.4",
 import Docxtemplater from "docxtemplater"; //"docxtemplater": "^3.34.3",
 
 const ruleFormRef = ref();
+const chineseToEnglish = {
+  星期一: "monday",
+  星期二: "tuesday",
+  星期三: "wednesday",
+  星期四: "thursday",
+  星期五: "friday",
+};
+const templateDays = ["monday", "tuesday", "wednesday", "thursday", "friday"];
 const form = reactive({
   dateString: "",
   text: "",
@@ -61,21 +74,7 @@ const renderText = (str) => {
   }
   return str || "";
 };
-const copyToClipboard = (text) => {
-  var textarea = document.createElement("textarea"); //创建临时的textarea元素
-  textarea.value = text; //设置要复制的文本内容
-  document.body.appendChild(textarea); //添加到页面上
-  textarea.select(); //选中文本区域
-  try {
-    var successful = document.execCommand("copy"); //执行复制命令
-    var msg = successful ? "成功" : "失败";
-    console.log("已复制到剪贴板", msg);
-  } catch (err) {
-    console.error("无法复制到剪贴板", err);
-  } finally {
-    document.body.removeChild(textarea); //移除临时的textarea元素
-  }
-};
+
 const onSubmit = async (formEl) => {
   if (!formEl) return;
   await formEl.validate((valid, fields) => {
@@ -85,17 +84,43 @@ const onSubmit = async (formEl) => {
       const meals = cleanedText
         .split(/星期[一二三四五]/)
         .filter((item) => item !== "");
-      const days = ["monday", "tuesday", "wednesday", "thursday", "friday"];
+      let days = [...templateDays];
       const menu = {
-        monday: {},
-        tuesday: {},
-        wednesday: {},
-        thursday: {},
-        friday: {},
+        monday: {
+          mondayBreakfast: "",
+          mondayLunch: "",
+          mondaySupper: "",
+        },
+        tuesday: { tuesdayBreakfast: "", tuesdayLunch: "", tuesdaySupper: "" },
+        wednesday: {
+          wednesdayBreakfast: "",
+          wednesdayLunch: "",
+          wednesdaySupper: "",
+        },
+        thursday: {
+          thursdayBreakfast: "",
+          thursdayLunch: "",
+          thursdaySupper: "",
+        },
+        friday: { fridayBreakfast: "", fridayLunch: "", fridaySupper: "" },
       };
-
+      const regex = /星期一|星期二|星期三|星期四|星期五/g;
+      const matches = text.match(regex);
+      let missingDays = [];
+      if (matches && matches.length !== 5) {
+        missingDays = ["星期一", "星期二", "星期三", "星期四", "星期五"].filter(
+          (day) => !matches?.includes(day)
+        );
+        days = days.filter((day) => {
+          const chineseDay = missingDays.find((chinese) =>
+            day.includes(chineseToEnglish[chinese])
+          );
+          return !chineseDay;
+        });
+      }
       meals.forEach((meal, index) => {
         const day = days[index];
+
         const sections = meal
           .split(/早餐|午餐|晚餐/)
           .filter((item) => item !== "");
@@ -113,7 +138,7 @@ const onSubmit = async (formEl) => {
       for (var i = 0; i < 5; i++) {
         const month = date.getMonth() + 1;
         const day = date.getDate();
-        result[`${days[i]}Date`] = `${month}月${day}日`;
+        result[`${templateDays[i]}Date`] = `${month}月${day}日`;
         date.setDate(date.getDate() + 1);
       }
 
@@ -126,15 +151,12 @@ const onSubmit = async (formEl) => {
         ...friday,
       };
       renderDoc(data);
-      const json = JSON.stringify(data);
-      form.data = json;
       ElMessage({
-        message: "已成功生成数据，请复制后点击跳转按钮！",
+        message: "已成功生成文件",
         type: "success",
         duration: 5000,
         offset: 24,
       });
-      copyToClipboard(json);
     } else {
       console.log("error submit!", fields);
     }
@@ -173,9 +195,6 @@ const renderDoc = async (json) => {
   }
 };
 
-const handleTo = () => {
-  window.open("https://docxtemplater.com/demo/#/view/cyber-security-report");
-};
 const showCustomDatePicker = (event) => {
   event.preventDefault();
 };
