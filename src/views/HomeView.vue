@@ -30,7 +30,9 @@
 <script lang="ts" setup>
 import zhCn from "element-plus/dist/locale/zh-cn.mjs";
 import { ElMessage } from "element-plus";
-import { h, ref, reactive } from "vue";
+import { ref, reactive } from "vue";
+import PizZip from "pizzip"; //"pizzip": "^3.1.4",
+import Docxtemplater from "docxtemplater"; //"docxtemplater": "^3.34.3",
 
 const ruleFormRef = ref();
 const form = reactive({
@@ -120,19 +122,51 @@ const onSubmit = async (formEl) => {
         ...thursday,
         ...friday,
       };
+      renderDoc(data);
       const json = JSON.stringify(data);
       form.data = json;
       ElMessage({
         message: "已成功生成数据，请复制后点击跳转按钮！",
         type: "success",
         duration: 5000,
-        offset: 24
+        offset: 24,
       });
       copyToClipboard(json);
     } else {
       console.log("error submit!", fields);
     }
   });
+};
+
+const renderDoc = async (json) => {
+  const template = await fetch("./menu.docx").then((res) => res.arrayBuffer());
+  const zip = new PizZip(template);
+
+  const doc = new Docxtemplater().loadZip(zip);
+  console.log("------看看json-------", json);
+  console.log("------end-------");
+  // 替换占位符
+  doc.setData(json);
+  doc.render();
+
+  // 生成 Word 文件并下载
+  const out = doc.getZip().generate({
+    type: "blob",
+    mimeType:
+      "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+  });
+  const fileName = `食堂菜谱${json.mondayDate}.docx`;
+  if (window.navigator.msSaveOrOpenBlob) {
+    window.navigator.msSaveOrOpenBlob(out, fileName);
+  } else {
+    const url = window.URL.createObjectURL(out);
+    const link = document.createElement("a");
+    link.href = url;
+    link.setAttribute("download", fileName);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  }
 };
 
 const handleTo = () => {
