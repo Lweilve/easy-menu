@@ -42,7 +42,6 @@ import { ref, reactive, onMounted } from "vue";
 import PizZip from "pizzip"; //"pizzip": "^3.1.4",
 import Docxtemplater from "docxtemplater"; //"docxtemplater": "^3.34.3",
 
-const ruleFormRef = ref();
 const chineseToEnglish = {
   星期一: "monday",
   星期二: "tuesday",
@@ -50,6 +49,10 @@ const chineseToEnglish = {
   星期四: "thursday",
   星期五: "friday",
 };
+const filterArr = ['', ',', '，', '.' , '。', ';', '；']
+
+const ruleFormRef = ref();
+
 const templateDays = ["monday", "tuesday", "wednesday", "thursday", "friday"];
 const form = reactive({
   dateString: "",
@@ -80,10 +83,12 @@ const onSubmit = async (formEl) => {
   await formEl.validate((valid, fields) => {
     if (valid) {
       const { dateString, text } = form;
-      const cleanedText = text.replace(/\s|\n/g, "");
+      let cleanedText = text.replace(/\s|\n/g, "");
+      let index = cleanedText.indexOf("星期一");
+      cleanedText = cleanedText.slice(index);
       const meals = cleanedText
         .split(/星期[一二三四五]/)
-        .filter((item) => item !== "");
+        .filter((item) => !filterArr.includes(item));
       let days = [...templateDays];
       const menu = {
         monday: {
@@ -123,7 +128,7 @@ const onSubmit = async (formEl) => {
 
         const sections = meal
           .split(/早餐|午餐|晚餐/)
-          .filter((item) =>  !['', ',', '，', '.' , '。', ';', '；'].includes(item) );
+          .filter((item) =>  !filterArr.includes(item));
         menu[day] = {
           [`${day}Breakfast`]: renderText(sections[0]),
           [`${day}Lunch`]: renderText(sections[1]),
@@ -131,7 +136,6 @@ const onSubmit = async (formEl) => {
         };
       });
       const { monday, tuesday, wednesday, thursday, friday } = menu;
-
       let date = new Date(dateString);
       const result = {};
 
