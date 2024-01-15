@@ -37,8 +37,8 @@
 
 <script lang="ts" setup>
 import zhCn from "element-plus/dist/locale/zh-cn.mjs";
-import { ElMessage } from "element-plus";
-import { ref, reactive } from "vue";
+import { ElMessage, ElNotification } from "element-plus";
+import { ref, reactive, onMounted } from "vue";
 import PizZip from "pizzip"; //"pizzip": "^3.1.4",
 import Docxtemplater from "docxtemplater"; //"docxtemplater": "^3.34.3",
 
@@ -198,6 +198,18 @@ const renderDoc = async (json) => {
 const showCustomDatePicker = (event) => {
   event.preventDefault();
 };
+
+onMounted(() => {
+  const ua = window.navigator.userAgent.toLowerCase();
+  if (ua.match(/MicroMessenger/i) == "micromessenger") {
+    ElNotification({
+      title: "当前为微信浏览器",
+      message: "请点击右上角选择在浏览器中打开",
+      type: "warning",
+      duration: 0
+    });
+  }
+});
 </script>
 
 <style>
