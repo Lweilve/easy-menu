@@ -123,7 +123,7 @@ const onSubmit = async (formEl) => {
 
         const sections = meal
           .split(/早餐|午餐|晚餐/)
-          .filter((item) => item !== "");
+          .filter((item) =>  !['', ',', '，', '.' , '。', ';', '；'].includes(item) );
         menu[day] = {
           [`${day}Breakfast`]: renderText(sections[0]),
           [`${day}Lunch`]: renderText(sections[1]),
@@ -150,7 +150,7 @@ const onSubmit = async (formEl) => {
         ...thursday,
         ...friday,
       };
-      renderDoc(data);
+      // renderDoc(data);
       ElMessage({
         message: "已成功生成文件",
         type: "success",
