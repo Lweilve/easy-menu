@@ -150,7 +150,7 @@ const onSubmit = async (formEl) => {
         ...thursday,
         ...friday,
       };
-      // renderDoc(data);
+      renderDoc(data);
       ElMessage({
         message: "已成功生成文件",
         type: "success",
