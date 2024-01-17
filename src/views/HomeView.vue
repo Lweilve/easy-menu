@@ -49,7 +49,7 @@ const chineseToEnglish = {
   星期四: "thursday",
   星期五: "friday",
 };
-const filterArr = ['', ',', '，', '.' , '。', ';', '；']
+const filterArr = ['', ',', '，', '.' , '。', ';', '；', ':']
 
 const ruleFormRef = ref();
 
@@ -72,7 +72,7 @@ const rules = reactive({
 });
 const locale = reactive(zhCn);
 const renderText = (str) => {
-  if (str && [",", "，"].includes(str.charAt(0))) {
+  if (str && filterArr.includes(str.charAt(0))) {
     str = str.slice(1);
   }
   return str || "";
