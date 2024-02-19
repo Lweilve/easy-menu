@@ -1,6 +1,6 @@
 <template>
   <el-config-provider :locale="locale" size="large">
-    <h1 class="title">食堂菜谱生成系统(测试)</h1>
+    <h1 class="title">食堂菜谱生成系统</h1>
     <el-form
       ref="ruleFormRef"
       :model="form"
@@ -19,7 +19,7 @@
         />
       </el-form-item>
       <el-form-item label="菜单数据" prop="text">
-        <el-input v-model="form.text" type="textarea" rows="7" />
+        <el-input v-model="form.text" type="textarea" rows="9" />
       </el-form-item>
       <el-form-item>
         <el-button
@@ -42,15 +42,6 @@ import { ref, reactive, onMounted } from "vue";
 import PizZip from "pizzip"; //"pizzip": "^3.1.4",
 import Docxtemplater from "docxtemplater"; //"docxtemplater": "^3.34.3",
 
-const template = {
-  星期日: "sunday",
-  星期一: "monday",
-  星期二: "tuesday",
-  星期三: "wednesday",
-  星期四: "thursday",
-  星期五: "friday",
-  星期六: "saturday",
-};
 const filterArr = ["", ",", "，", ".", "。", ";", "；", ":"];
 
 const ruleFormRef = ref();
@@ -87,6 +78,7 @@ const renderText = (str) => {
   }
   return str || "";
 };
+// 获取开始日期为星期几
 const getWeekday = (string) => {
   var date = new Date(string);
   var dayOfWeek = date.getDay();
@@ -195,8 +187,8 @@ const onSubmit = async (formEl) => {
           "星期日",
         ];
       }
-
-      const startDayWeekIndex = DateWeekArray.findIndex((state) => state === 'startDayWeek');
+      // 获取开始星期的下标
+      const startDayWeekIndex = DateWeekArray.findIndex((state) => state === startDayWeek);
       for (let index = 0; index < DateWeekArray.length; index++) {
         const element = DateWeekArray[index];
         const value = result.get(element);
