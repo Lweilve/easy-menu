@@ -1,6 +1,9 @@
 <template>
   <el-config-provider :locale="locale" size="large">
-    <h1 class="title">食堂菜谱生成系统</h1>
+    <div class="header">
+      <h1 class="title">食堂菜谱生成系统</h1>
+      <div class="tour" @click="handleClickTour">指南</div>
+    </div>
     <el-form
       ref="ruleFormRef"
       :model="form"
@@ -8,7 +11,7 @@
       label-width="120px"
       label-position="top"
     >
-      <el-form-item label="开始日期" prop="dateString">
+      <el-form-item ref="ref1" label="开始日期" prop="dateString">
         <el-date-picker
           v-model="form.dateString"
           type="date"
@@ -18,11 +21,12 @@
           @click="showCustomDatePicker"
         />
       </el-form-item>
-      <el-form-item label="菜单数据" prop="text">
+      <el-form-item ref="ref2" label="菜单数据" prop="text">
         <el-input v-model="form.text" type="textarea" rows="9" />
       </el-form-item>
       <el-form-item>
         <el-button
+          ref="ref3"
           style="width: 100%"
           type="primary"
           size="large"
@@ -32,6 +36,23 @@
         </el-button>
       </el-form-item>
     </el-form>
+    <el-tour v-model="openTour">
+      <el-tour-step
+        :target="ref1?.$el"
+        title="第一步：选择日期"
+        description="选择菜单数据开始的第一天"
+      />
+      <el-tour-step
+        :target="ref2?.$el"
+        title="第二步：粘贴菜单数据"
+        description="将菜单数据粘贴进该输入框"
+      />
+      <el-tour-step
+        :target="ref3?.$el"
+        title="第三步：点击生成按钮"
+        description="将自动下载菜单文件"
+      />
+    </el-tour>
   </el-config-provider>
 </template>
 
@@ -41,6 +62,18 @@ import { ElMessage, ElNotification } from "element-plus";
 import { ref, reactive, onMounted } from "vue";
 import PizZip from "pizzip"; //"pizzip": "^3.1.4",
 import Docxtemplater from "docxtemplater"; //"docxtemplater": "^3.34.3",
+
+// #region 引导
+const openTour = ref(false);
+const ref1 = ref();
+const ref2 = ref();
+const ref3 = ref();
+const handleClickTour = () => {
+  openTour.value = true;
+}
+// #endregion 引导
+
+const isMicromessenger = ref(false);
 
 const filterArr = ["", ",", "，", ".", "。", ";", "；", ":"];
 
@@ -86,62 +119,38 @@ const getWeekday = (string) => {
 };
 
 const onSubmit = async (formEl) => {
+  if (isMicromessenger.value) {
+    return ElMessage({
+        message: "当前为微信浏览器，请使用手机浏览器生成文件",
+        type: "warning",
+        duration: 5000,
+        offset: 24,
+      });
+  }
   if (!formEl) return;
   await formEl.validate((valid, fields) => {
     if (valid) {
       const { dateString, text } = form;
       // 初始数据
       const menu = {
-        Date0: {
-          Date0: "",
-          Date0Week: "",
-          Date0Breakfast: "",
-          Date0Lunch: "",
-          Date0Supper: "",
-        },
-        Date1: {
-          Date1: "",
-          Date1Week: "",
-          Date1Breakfast: "",
-          Date1Lunch: "",
-          Date1Supper: "",
-        },
-        Date2: {
-          Date2: "",
-          Date2Week: "",
-          Date2Breakfast: "",
-          Date2Lunch: "",
-          Date2Supper: "",
-        },
-        Date3: {
-          Date3: "",
-          Date3Week: "",
-          Date3Breakfast: "",
-          Date3Lunch: "",
-          Date3Supper: "",
-        },
-        Date4: {
-          Date4: "",
-          Date4Week: "",
-          Date4Breakfast: "",
-          Date4Lunch: "",
-          Date4Supper: "",
-        },
-        Date5: {
-          Date5: "",
-          Date5Week: "",
-          Date5Breakfast: "",
-          Date5Lunch: "",
-          Date5Supper: "",
-        },
-        Date6: {
-          Date6: "",
-          Date6Week: "",
-          Date6Breakfast: "",
-          Date6Lunch: "",
-          Date6Supper: "",
-        },
+        Date0: {},
+        Date1: {},
+        Date2: {},
+        Date3: {},
+        Date4: {},
+        Date5: {},
+        Date6: {},
       };
+      for (let i = 0; i < 7; i++) {
+        const dateKey = `Date${i}`;
+        menu[dateKey] = {
+          [dateKey]: "",
+          [`${dateKey}Week`]: "",
+          [`${dateKey}Breakfast`]: "",
+          [`${dateKey}Lunch`]: "",
+          [`${dateKey}Supper`]: "",
+        };
+      }
       // 处理数据，去除换行和空格
       let cleanedText = text.replace(/\s|\n/g, "");
       // 分离菜单数据
@@ -188,7 +197,9 @@ const onSubmit = async (formEl) => {
         ];
       }
       // 获取开始星期的下标
-      const startDayWeekIndex = DateWeekArray.findIndex((state) => state === startDayWeek);
+      const startDayWeekIndex = DateWeekArray.findIndex(
+        (state) => state === startDayWeek
+      );
       for (let index = 0; index < DateWeekArray.length; index++) {
         const element = DateWeekArray[index];
         const value = result.get(element);
@@ -226,7 +237,7 @@ const onSubmit = async (formEl) => {
         date.setDate(date.getDate() + index - startDayWeekIndex);
         const month = date.getMonth() + 1;
         const day = date.getDate();
-        
+
         menu[`Date${index}`][`Date${index}`] = `${month}月${day}日`;
         menu[`Date${index}`][`Date${index}Week`] = element;
       }
@@ -300,6 +311,7 @@ const showCustomDatePicker = (event) => {
 onMounted(() => {
   const ua = window.navigator.userAgent.toLowerCase();
   if (ua.match(/MicroMessenger/i) == "micromessenger") {
+    isMicromessenger.value = true;
     ElNotification({
       title: "当前为微信浏览器",
       message: "请点击右上角选择在浏览器中打开",
@@ -311,8 +323,18 @@ onMounted(() => {
 </script>
 
 <style>
+.header {
+  position: relative;
+}
 .title {
   margin-bottom: 20px;
   text-align: center;
+}
+.tour {
+  position: absolute;
+  top: 50%;
+  right: 0;
+  cursor: pointer;
+  /* font-size: 18px; */
 }
 </style>
